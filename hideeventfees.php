@@ -40,7 +40,7 @@ function hideeventfees_civicrm_enable(): void {
 function hideeventfees_civicrm_searchColumns($objectName, &$headers, &$rows, &$selector) {
   if ($objectName == 'event' && !CRM_Core_Permission::check('civicrm see event fees')) {
     foreach ($headers as $id => $header) {
-      if (in_array(($header['sort'] ?? ''), ['participant_fee_amount'])) {
+      if (in_array(($header['sort'] ?? ''), ['participant_fee_amount', 'participant_fee_level'])) {
         unset($headers[$id]);
       }
     }
@@ -59,19 +59,23 @@ function hideeventfees_civicrm_buildForm($formName, &$form) {
     if (!CRM_Core_Permission::check('civicrm see event fees')) {
       CRM_Core_Resources::singleton()->addScript(
         "CRM.$(function($) {
-          console.log('ddd');
           $('.selector td.crm-participant-participant_fee_amount').remove();
+          $('.selector td.crm-participant-participant_fee_level').remove();
         });"
       );
     }
   }
 
-  if (in_array($formName, ['CRM_Event_Form_ParticipantView'])) {
+  if (in_array($formName, ['CRM_Event_Form_ParticipantView', 'CRM_Event_Form_Participant'])) {
     if (!CRM_Core_Permission::check('civicrm see event fees')) {
       $form->assign('fee_level', []);
       $form->assign('hasPayment', FALSE);
+      CRM_Core_Resources::singleton()->addStyle(
+        "tr.crm-event-eventfees-form-block-price_set_amount { display: none !important;}"
+      );
     }
   }
+
 }
 
 /**
